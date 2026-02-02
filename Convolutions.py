@@ -4,7 +4,7 @@ import cv2
 from matplotlib import pyplot as plt
 
 #Lecture image en niveau de gris et conversion en float64
-img=np.float64(cv2.imread('../Image_Pairs/FlowerGarden2.png',0))
+img=np.float64(cv2.imread('./Image_Pairs/FlowerGarden2.png',0))
 (h,w) = img.shape
 print("Dimension de l'image :",h,"lignes x",w,"colonnes")
 
@@ -45,3 +45,13 @@ plt.imshow(img3,cmap = 'gray',vmin = 0.0,vmax = 255.0)
 plt.title('Convolution - filter2D')
 
 plt.show()
+
+dif = img2-img3
+
+plt.figure()
+plt.imshow(img2-img3,cmap = 'gray',vmin = -255.0,vmax = 255.0)
+plt.show()
+
+print("La plus grande diférence entre les deux images a été de :",np.max(dif))
+print("La diférence moyenne par pixel entre les deux images a été de :",np.average(abs(dif)))
+print(np.sum(img3 < 0))
