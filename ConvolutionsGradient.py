@@ -8,86 +8,87 @@ img=np.float64(cv2.imread('./Image_Pairs/FlowerGarden2.png',0))
 (h,w) = img.shape
 print("Dimension de l'image :",h,"lignes x",w,"colonnes")
 
-#Méthode directe
-t1 = cv2.getTickCount()
-gradx = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
-for y in range(1,h-1):
-  for x in range(1,w-1):
-    val = (0.5)*img[y, x+1] - (0.5)*img[y, x-1] 
-    gradx[y,x] = val
-t2 = cv2.getTickCount()
-time = (t2 - t1)/ cv2.getTickFrequency()
-print("Méthode directe :",time,"s")
-
-gradx_min0 = gradx+122.5
-
-cv2.imshow('Avec boucle python',gradx_min0.astype(np.uint8))
 #Convention OpenCV : une image de type entier est interprétée dans {0,...,255}
-cv2.waitKey(0)
 
-plt.subplot(121)
-plt.imshow(gradx_min0,cmap = 'gray')
-plt.title('Convolution - Méthode Directe')
 
-#Méthode filter2D
+# Calcul de gradx
+
+
 t1 = cv2.getTickCount()
-kernel = np.array([[0, 0, 0],[-1/2, 0, 1/2],[0, 0, 0]])
-gradx_2 = cv2.filter2D(img,-1,kernel)
+# kernel = (1/2)*np.array([[0, 0, 0],[-1, 0, 1],[0, 0, 0]])
+# Masques de sobel
+kernel = (1/8)*np.array([[-1, 0, 1],[-2, 0, 2],[-1, 0, 1]])
+gradx = cv2.filter2D(img,-1,kernel)
 t2 = cv2.getTickCount()
 time = (t2 - t1)/ cv2.getTickFrequency()
-print("Méthode filter2D :",time,"s")
+print("Calcul de gradx :",time,"s")
 
-gradx_2_min0 = gradx_2+122.5
+gradx_normalized = gradx
+# gradx_normalized = gradx+122.5
 
-cv2.imshow('Avec filter2D',gradx_2_min0/255.0)
+print("Valeur maximale: ",np.max(gradx_normalized),"\nValeur minimale: ",np.min(gradx_normalized))
+cv2.imshow('Gradient in the X axis',gradx_normalized/255.0)
 #Convention OpenCV : une image de type flottant est interprétée dans [0,1]
 cv2.waitKey(0)
 
-plt.subplot(122)
-plt.imshow(gradx_2_min0,cmap = 'gray',vmin = 0.0,vmax = 255.0)
+plt.figure()
+plt.imshow(gradx_normalized,cmap = 'gray',vmin = -255.0,vmax = 255.0)
+#Convention Matplotlib : par défaut, normalise l'histogramme !
+plt.title('Gradient in the X axis')
+
+plt.show()
+
+
+# Calcul de grady
+
+
+t1 = cv2.getTickCount()
+# kernel = (1/2)*np.array([[0, 1, 0],[0, 0, 0],[0, -1, 0]])
+# Masque de sobel
+kernel = (1/8)*np.array([[1, 2, 1],[0, 0, 0],[-1, -2, -1]])
+grady = cv2.filter2D(img,-1,kernel)
+t2 = cv2.getTickCount()
+time = (t2 - t1)/ cv2.getTickFrequency()
+print("Calcul de gradx :",time,"s")
+
+grady_normalized = grady
+#grady_normalized = grady+122.5
+
+cv2.imshow('Gradient in the Y axis',grady_normalized/255.0)
+#Convention OpenCV : une image de type flottant est interprétée dans [0,1]
+cv2.waitKey(0)
+
+plt.figure()
+plt.imshow(grady_normalized,cmap = 'gray',vmin = -255.0,vmax = 255.0)
 #Convention Matplotlib : par défaut, normalise l'histogramme !
 plt.title('Convolution - filter2D')
 
 plt.show()
 
-#Méthode directe
-t1 = cv2.getTickCount()
-grady = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
-for y in range(1,h-1):
-  for x in range(1,w-1):
-    val = (0.5)*img[y+1, x] - (0.5)*img[y-1, x] 
-    grady[y,x] = val
-t2 = cv2.getTickCount()
-time = (t2 - t1)/ cv2.getTickFrequency()
-print("Méthode directe :",time,"s")
 
-grady_min0 = grady+122.5
+# Calcul du laplacian
 
-cv2.imshow('Avec boucle python',grady_min0.astype(np.uint8))
-#Convention OpenCV : une image de type entier est interprétée dans {0,...,255}
-cv2.waitKey(0)
-
-plt.subplot(121)
-plt.imshow(grady_min0,cmap = 'gray')
-plt.title('Convolution - Méthode Directe')
 
 #Méthode filter2D
 t1 = cv2.getTickCount()
-kernel = np.array([[0, 1/2, 0],[0, 0, 0],[0, -1/2, 0]])
-grady_2 = cv2.filter2D(img,-1,kernel)
+# 4-connexité
+kernel = (1/8)*np.array([[0, 1, 0],[1, -4, 1],[0, 1, 0]])
+# 8-connexité
+kernel = (1/16)*np.array([[1, 1, 1],[1, -8, 1],[1, 1, 1]])
+laplacian = cv2.filter2D(img,-1,kernel)
 t2 = cv2.getTickCount()
 time = (t2 - t1)/ cv2.getTickFrequency()
-print("Méthode filter2D :",time,"s")
+print("Calcul du laplacian :",time,"s")
 
-grady_2_min0 = grady_2+122.5
+laplacian_normalized = laplacian
 
-cv2.imshow('Avec filter2D',grady_2_min0/255.0)
+cv2.imshow('Laplacian',laplacian_normalized/255.0)
 #Convention OpenCV : une image de type flottant est interprétée dans [0,1]
 cv2.waitKey(0)
 
-plt.subplot(122)
-plt.imshow(grady_2_min0,cmap = 'gray',vmin = 0.0,vmax = 255.0)
+plt.figure()
+plt.imshow(laplacian_normalized,cmap = 'gray',vmin = 0.0,vmax = 255.0)
 #Convention Matplotlib : par défaut, normalise l'histogramme !
-plt.title('Convolution - filter2D')
+plt.title('Laplacian')
 
 plt.show()

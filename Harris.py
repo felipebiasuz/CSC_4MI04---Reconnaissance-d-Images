@@ -3,8 +3,10 @@ import cv2
 
 from matplotlib import pyplot as plt
 
+from scipy.ndimage import maximum_filter
+
 #Lecture image en niveau de gris et conversion en float64
-img=np.float64(cv2.imread('../Image_Pairs/Graffiti0.png',cv2.IMREAD_GRAYSCALE))
+img=np.float64(cv2.imread('./Image_Pairs/Graffiti0.png',cv2.IMREAD_GRAYSCALE))
 (h,w) = img.shape
 print("Dimension de l'image :",h,"lignes x",w,"colonnes")
 print("Type de l'image :",img.dtype)
@@ -13,9 +15,39 @@ print("Type de l'image :",img.dtype)
 t1 = cv2.getTickCount()
 Theta = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
 # Mettre ici le calcul de la fonction d'intérêt de Harris
-#
-#
-#
+
+sigma1 = 1.0
+
+img_blur = cv2.GaussianBlur(
+    img, (3, 3), sigmaX=sigma1, sigmaY=sigma1
+)
+
+Ix = cv2.Sobel(img_blur, cv2.CV_64F, 1, 0, ksize=3)
+Iy = cv2.Sobel(img_blur, cv2.CV_64F, 0, 1, ksize=3)
+
+g = np.stack([Ix, Iy], axis=-1)      # (H, W, 2)
+C = np.einsum('...i,...j->...ij', g, g)
+
+alpha = 0.06
+
+tr = np.einsum('...ii->...', C)
+det = np.einsum('...ab,...cd->...', C[...,0,0], C[...,1,1]) - np.einsum('...ab,...cd->...', C[...,0,1], C[...,1,0])
+
+Theta = det - alpha * tr**2
+
+# def find_local_maxima(M, window_size=3, threshold_rel=0.01):
+
+#     local_max = maximum_filter(M, size=window_size)
+
+#     maxima_mask = (M == local_max)
+
+#     threshold = threshold_rel * np.max(M)
+#     maxima_mask &= (M > threshold) # bigger than absolute threshold and a maximum
+
+#     return maxima_mask
+
+# maxima_matrix = find_local_maxima(theta)
+
 # Calcul des maxima locaux et seuillage
 Theta_maxloc = cv2.copyMakeBorder(Theta,0,0,0,0,cv2.BORDER_REPLICATE)
 d_maxloc = 3
